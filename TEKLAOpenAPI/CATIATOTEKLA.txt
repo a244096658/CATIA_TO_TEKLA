@@ -1,0 +1,171 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Tekla.Structures.Model;
+using TS = Tekla.Structures.Geometry3d;
+using MECMOD;
+using PARTITF;
+using System.Runtime.InteropServices;
+
+
+
+namespace CatiaToTeklaConsoleApplication
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+
+            // Get Catia with the structural sequence: application ---> partDocumentation --->Part ---> Parameters
+            INFITF.Application catia;
+
+            catia = (INFITF.Application)Marshal.GetActiveObject("CATIA.Application"); //Catia application 拿到
+
+            catia.Visible = true;
+
+            PartDocument partDoc = (PartDocument)catia.ActiveDocument; //拿到 Catia当前 零件文档。 -->Part document
+
+            MECMOD.Part part = partDoc.Part; // 拿到当前零件--->Part . TEKLA也有Part类，所以写成MECMOD.Part，所以就不混了。
+
+            KnowledgewareTypeLib.Parameters parameters = part.Parameters; //拿到当前parameters, parameters是所有参数的集合。
+
+
+            //拿到part parameter
+            var parameterTopFlangeWidth = parameters.Item("TopFlangeWidth"); //拿到当前parameter object，可以通过序号（序号从1开始）/ 或者通过parameter名字拿到
+            string parameterTopFlangeWidthValue = parameterTopFlangeWidth.ValueAsString(); //显示拿到的parameter object的value. Value是parameter object的一个属性，返回parameter object的值。
+
+            var parameterTopFlangeThickness = parameters.Item("TopFlangeThickness");  
+            string parameterTopFlangeThicknessValue = parameterTopFlangeThickness.ValueAsString();
+
+            var parameterBottomFlangeWidth = parameters.Item("BottomFlangeWidth");
+            string parameterBottomFlangeWidthValue = parameterBottomFlangeWidth.ValueAsString();
+
+            var parameterBottomFlangeThickness = parameters.Item("BottomFlangeThickness");
+            string parameterBottomFlangeThicknessValue = parameterBottomFlangeThickness.ValueAsString();
+
+            var parameterWebThickness = parameters.Item("WebThickness");
+            string parameterWebThicknessValue = parameterWebThickness.ValueAsString();
+
+            var parameterMainGirderHeight = parameters.Item("MainGirderHeight");
+            string parameterMainGirderHeightValue = parameterMainGirderHeight.ValueAsString();
+
+            var parameterMainGirderLength = parameters.Item("MainGirderLength");
+            string parameterMainGirderLengthValue = parameterMainGirderLength.ValueAsString();
+            // Get parameter end 
+
+            // Make the beam object instance of the ModelParameter. So we access the parameter data from the object
+            //通过IshapeBeam.parameterNameValue 来访问具体的截面parameter.          
+            ModelParameter IshapeBeam = new ModelParameter(parameterTopFlangeWidthValue, parameterTopFlangeThicknessValue, parameterBottomFlangeWidthValue, parameterBottomFlangeThicknessValue, parameterWebThicknessValue, parameterMainGirderHeightValue, parameterMainGirderLengthValue); 
+
+
+            //Connect to TEKLA
+            Model model1 = new Model(); //Create a model envrinment
+
+            if (model1.GetConnectionStatus()) //Test if the model is connected to the tekla software.
+            {
+                Console.WriteLine("TEKLA is now connected");
+            }
+            else
+            {
+                Console.WriteLine("TEKLA connection error");
+            };
+
+            Console.WriteLine("TEKLA connection status is " + model1.GetConnectionStatus());
+
+            //Convert its string type to double.
+            double beam1Length = Convert.ToDouble(IshapeBeam.MainGirderLength);
+
+            //Create a beam by start point and end point
+            Beam beam1 = new Beam(new TS.Point(), new TS.Point(beam1Length, 0,0 )); 
+
+  
+
+            //  ISECTION500*30*700*30*20*2500.  按照Tekla section的参数顺序来放置beam1SectionParameterString
+            string beam1SectionParameterString = string.Format("{0}*{1}*{2}*{3}*{4}*{5}", IshapeBeam.TopFlangeWidth, IshapeBeam.BottomFlangeWidth, IshapeBeam.WebThickness, IshapeBeam.TopFlangeThickness, IshapeBeam.BottomFlangeThickness, IshapeBeam.MainGirderHeight);
+            Console.WriteLine("The beamSectionParameterString is " + beam1SectionParameterString );
+            Console.WriteLine("The length of the beam is " + beam1Length + " The length type is " + beam1Length.GetType());
+            
+            //The profileString is parametric, according to the beam1SectionParameterString. 通过参数化操控TEKLA Profile。不是单纯的Switch判断然后选择TEKLA section profile
+            string profileString = string.Format("{0}{1}","ISECTION",beam1SectionParameterString);
+            beam1.Material.MaterialString = "S235J0";
+            beam1.Profile.ProfileString = profileString;
+            beam1.Insert();
+            model1.CommitChanges();
+
+            //Tekla part end
+
+
+
+            //Catia part 拿到body. 
+            MECMOD.Bodies bodies = part.Bodies; //拿到当前part内所有body, 即bodies。 bodies是所有的body的集合。 -->body 实体
+
+            MECMOD.Body body = bodies.Item("MainGirder"); //通过输入body的名字来拿到当前的body. 
+
+            MECMOD.Sketches sketches = body.Sketches; //Sketches是Sketch的集合。-->即草图们的集合。
+
+            //MECMOD.Sketch sketch = sketches.ske
+
+
+            foreach (MECMOD.Sketch i in sketches)  //Sketches包含所有草图，比如包含现有的sketch.7。 可以使用for循环遍历sketches中所有的sketch
+            {
+                //Console.WriteLine(i.get_Name());
+            };
+
+            MECMOD.Sketch sketch = sketches.Item("Sketch.7"); //通过草图的名字拿到草图 -->拿到Sketch
+
+            MECMOD.GeometricElements geometricElements = sketch.GeometricElements;
+
+
+            //foreach (MECMOD.GeometricElement geo in geometricElements)
+            //{
+            //    Console.WriteLine(geo.get_Name());
+            //}
+        
+
+            //Console.WriteLine(body.get_Name());
+       
+
+            //Console.WriteLine(partDoc.FullName); 
+
+            //Console.WriteLine(catia.FullName);
+
+            Console.ReadLine();
+
+
+
+
+        }
+    }
+
+
+    //Make the class of the Catia part, then we make the object instance of this class for the purpose of storing the parameters data
+    public class ModelParameter 
+    {
+        public string TopFlangeWidth;
+        public string TopFlangeThickness;
+        public string BottomFlangeWidth;
+        public string BottomFlangeThickness;
+        public string WebThickness;
+        public string MainGirderLength;
+        public string MainGirderHeight;
+
+        //定义构造函数。 构造函数名即为Class name
+        public ModelParameter(string _TopFlangeWidth, string _TopFlangeThickness, string _BottomFlangeWidth, string _BottomFlangeThickness, string _WebThickness, string _MainGirderHeight, string _MainGirderLength)
+        {
+            //将Catia输入的参数的mm去掉。 成为纯数字。
+            this.TopFlangeWidth = _TopFlangeWidth.Replace("mm","");
+            this.TopFlangeThickness = _TopFlangeThickness.Replace("mm", "");
+            this.BottomFlangeWidth = _BottomFlangeWidth.Replace("mm", "");
+            this.BottomFlangeThickness = _BottomFlangeThickness.Replace("mm", "");
+            this.WebThickness = _WebThickness.Replace("mm", "");
+            this.MainGirderLength = _MainGirderLength.Replace("mm", "");
+            this.MainGirderHeight = _MainGirderHeight.Replace("mm", "");
+        }
+
+    };
+
+
+
+}

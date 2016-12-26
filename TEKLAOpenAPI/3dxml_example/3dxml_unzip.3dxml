@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Model_3dxml xmlns="http://www.3ds.com/xsd/3DXML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<Header>
+		<SchemaVersion>4.3</SchemaVersion>
+		<Title>RwandaSkewBridge 3D XML File</Title>
+		<Author>曦</Author>
+		<Generator>CATIA V5</Generator>
+		<Created>2016-11-08</Created>
+	</Header>
+	<ProductStructure root="1">
+		<Reference3D xsi:type="Reference3DType" id="1" name="RwandaSkewBridge"/>
+		<ReferenceRep xsi:type="ReferenceRepType" id="2" name="RwandaSkewBridge_ReferenceRep" format="UVR" version="1.0" associatedFile="urn:3DXML:RwandaSkewBridge_sidegirder.3DRep">
+			<PLM_ExternalID>RwandaSkewBridge_ReferenceRep_ReferenceRep</PLM_ExternalID>
+			<V_discipline>Design</V_discipline>
+			<V_usage>3DShape</V_usage>
+			<V_nature>1</V_nature>
+		</ReferenceRep>
+		<InstanceRep xsi:type="InstanceRepType" id="3" name="RwandaSkewBridge_InstanceRep">
+			<IsAggregatedBy>1</IsAggregatedBy>
+			<IsInstanceOf>2</IsInstanceOf>
+		</InstanceRep>
+	</ProductStructure>
+	<DefaultView>
+		<Viewpoint xsi:type="ParallelViewpointType" visualizedHeight="3026.303442" targetDistance="12605.46484" nearPlaneDistance="8224.457031" farPlaneDistance="20179.07813">
+			<Position>-8943.339844 2856.837891 -852.0587769</Position>
+			<Sight>0.951623261 -0.3047757149 -0.03905239701</Sight>
+			<Right>-0.3064850271 -0.9505667686 -0.04989691079</Right>
+			<Up>0.02191454172 -0.05945203453 0.9979906082</Up>
+		</Viewpoint>
+	</DefaultView>
+</Model_3dxml>
